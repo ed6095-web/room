@@ -1,0 +1,1930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHITTY's Engineering Room</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Dancing+Script:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #00ff88;
+            display: flex; /* Use flexbox for overall layout */
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #container {
+            position: relative;
+            flex-grow: 1; /* Allows canvas to take available space */
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0a 100%);
+            overflow: hidden; /* Prevent scrollbars from canvas */
+        }
+
+        canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .ui-panel {
+            position: absolute;
+            background: rgba(0, 20, 40, 0.95);
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .right-controls {
+            position: absolute;
+            top: 50%;
+            right: 10px; /* Adjusted for mobile */
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Adjusted for mobile */
+            z-index: 10;
+        }
+
+        .interaction-panel {
+            top: 10px; /* Adjusted for mobile */
+            left: 10px; /* Adjusted for mobile */
+            padding: 15px; /* Adjusted for mobile */
+            min-width: 200px; /* Adjusted for mobile */
+            max-height: calc(100vh - 20px); /* Limit height for mobile */
+            overflow-y: auto; /* Enable scrolling if content overflows */
+        }
+
+        .futuristic-btn {
+            position: relative;
+            padding: 12px 15px; /* Adjusted for mobile */
+            border: none;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #000;
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            font-size: 12px; /* Adjusted for mobile */
+            border-radius: 25px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+            min-width: 150px; /* Adjusted for mobile */
+            text-align: center;
+        }
+
+        .futuristic-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .futuristic-btn:hover::before {
+            left: 100%;
+        }
+
+        .futuristic-btn:hover {
+            transform: translateX(-5px) scale(1.05);
+            box-shadow: 0 10px 25px rgba(0, 255, 136, 0.5);
+            background: linear-gradient(135deg, #00ffaa 0%, #00dd77 100%);
+        }
+
+        .futuristic-btn:active {
+            transform: translateX(-3px) scale(1.02);
+        }
+
+        .futuristic-btn.active {
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+        }
+
+        .futuristic-btn.active:hover {
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.6);
+        }
+
+        .title {
+            position: absolute;
+            top: 10px; /* Adjusted for mobile */
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px; /* Adjusted for mobile */
+            font-weight: 900;
+            background: linear-gradient(135deg, #00ff88 0%, #00ffff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            z-index: 10;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
+        }
+
+        .interaction-item {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 10px;
+            padding: 10px; /* Adjusted for mobile */
+            margin: 8px 0; /* Adjusted for mobile */
+            transition: all 0.3s ease;
+            font-size: 12px; /* Adjusted for mobile */
+        }
+
+        .interaction-item label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .interaction-item span {
+            display: block;
+            text-align: right;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        .interaction-item:hover {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: rgba(0, 255, 136, 0.6);
+            transform: translateX(5px);
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: rgba(0, 255, 136, 0.3);
+            outline: none;
+            margin: 5px 0; /* Adjusted for mobile */
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .neon-text {
+            color: #00ff88;
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+            animation: neon-flicker 2s infinite alternate;
+        }
+
+        @keyframes neon-flicker {
+            0%, 100% { text-shadow: 0 0 10px rgba(0, 255, 136, 0.8); }
+            50% { text-shadow: 0 0 20px rgba(0, 255, 136, 1), 0 0 30px rgba(0, 255, 136, 0.8); }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #00ffaa 0%, #00dd77 100%);
+        }
+
+        /* Mobile-specific adjustments */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column; /* Stack elements vertically */
+            }
+
+            .title {
+                font-size: 20px;
+                top: 5px;
+            }
+
+            .interaction-panel {
+                position: relative; /* Remove absolute positioning */
+                top: auto;
+                left: auto;
+                width: calc(100% - 20px); /* Full width with some padding */
+                margin: 10px auto; /* Center it */
+                max-height: 40vh; /* Adjust max height for mobile */
+                border-radius: 10px;
+                padding: 10px;
+            }
+
+            .right-controls {
+                position: relative; /* Remove absolute positioning */
+                top: auto;
+                right: auto;
+                transform: none;
+                flex-direction: row; /* Arrange buttons horizontally */
+                flex-wrap: wrap; /* Allow buttons to wrap */
+                justify-content: center;
+                gap: 8px; /* Smaller gap for buttons */
+                width: calc(100% - 20px);
+                margin: 5px auto 10px auto; /* Adjust margin for spacing */
+                padding: 10px;
+                border-radius: 10px;
+                background: rgba(0, 20, 40, 0.95); /* Add background for clarity */
+                box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+            }
+
+            .futuristic-btn {
+                padding: 8px 10px; /* Smaller padding */
+                font-size: 10px; /* Smaller font size */
+                min-width: unset; /* Remove min-width restriction */
+                flex-grow: 1; /* Allow buttons to grow and fill space */
+            }
+
+            .interaction-item {
+                font-size: 11px;
+                padding: 8px;
+                margin: 6px 0;
+            }
+
+            .interaction-item span {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="title neon-text">CHITTY's Engineering Room</div>
+    <div id="container"></div>
+
+    <div class="ui-panel interaction-panel">
+        <h3 class="neon-text" style="margin-top: 0;">🎛️ ENGINEERING CONTROLS</h3>
+        
+        <div class="interaction-item">
+            <label class="neon-text">Chair Rotation</label>
+            <input type="range" class="slider" id="chairRotation" min="0" max="360" value="180">
+            <span id="chairValue">180°</span>
+        </div>
+        
+        <div class="interaction-item">
+            <label class="neon-text">Zoom Level</label>
+            <input type="range" class="slider" id="zoomLevel" min="1" max="50" value="15">
+            <span id="zoomValue">15x</span>
+        </div>
+        
+        <div class="interaction-item">
+            <label class="neon-text">Wall LED Hue</label>
+            <input type="range" class="slider" id="wallColor" min="0" max="360" value="200">
+            <span id="colorValue">200°</span>
+        </div>
+        
+        <div class="interaction-item">
+            <label class="neon-text">Animation Speed</label>
+            <input type="range" class="slider" id="animSpeed" min="0.1" max="3" step="0.1" value="1">
+            <span id="speedValue">1x</span>
+        </div>
+    </div>
+
+    <div class="right-controls">
+        <button id="toggleSunlight" class="futuristic-btn active">☀️ SUNLIGHT</button>
+        <button id="toggleTubelight" class="futuristic-btn active">💡 TUBE LIGHT</button>
+        <button id="toggleLamp" class="futuristic-btn active">🏮 TABLE LAMP</button>
+        <button id="nightMode" class="futuristic-btn">🌙 NIGHT MODE</button>
+        <button id="resetView" class="futuristic-btn">🎯 RESET VIEW</button>
+        <button id="autoRotate" class="futuristic-btn">🔄 AUTO ROTATE</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        let scene, camera, renderer, controls;
+        let tubelight, tableLampLight, ambientLight, hemisphereLight, sunlight;
+        let tubelightMesh, tableLampMesh;
+        let chair, laptop, wardrobe, books = [];
+        let wallLights = [];
+        let interactiveObjects = [];
+        let raycaster, mouse;
+        
+        // Stable animation system
+        let clock = new THREE.Clock();
+        let animationId;
+        let animationSpeed = 1;
+        
+        // Interaction states
+        let chairRotationAngle = Math.PI;
+        let laptopOpen = true;
+        let wardrobeOpen = false;
+        let autoRotating = false;
+        
+        // Enhanced lighting states
+        const lightingStates = {
+            sunlight: true,
+            tubelight: true,
+            tableLamp: true,
+            nightMode: false
+        };
+
+        // Material cache for stability
+        const materials = {};
+
+        function init() {
+            // Enhanced scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a0a);
+            scene.fog = new THREE.Fog(0x0a0a0a, 20, 500);
+
+            // FIXED CAMERA - Proper clipping planes to prevent disappearing objects
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 5000);
+            camera.position.set(15, 10, 15);
+
+            // High-performance renderer with enhanced stability settings
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                powerPreference: "high-performance",
+                precision: "highp",
+                alpha: false,
+                stencil: false,
+                logarithmicDepthBuffer: true
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            
+            // Enhanced rendering settings
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.outputEncoding = THREE.sRGBEncoding;
+            renderer.toneMapping = THREE.ReinhardToneMapping;
+            renderer.toneMappingExposure = 1.5;
+            renderer.physicallyCorrectLights = true;
+            renderer.autoClear = true;
+            renderer.sortObjects = true;
+            
+            document.getElementById('container').appendChild(renderer.domElement);
+
+            // FIXED ORBIT CONTROLS
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.screenSpacePanning = false;
+            controls.minDistance = 0.1;
+            controls.maxDistance = 500;
+            controls.maxPolarAngle = Math.PI / 2.1;
+            controls.minPolarAngle = Math.PI / 8;
+            controls.enablePan = true;
+            controls.panSpeed = 1.0;
+            controls.rotateSpeed = 0.5;
+            controls.zoomSpeed = 1.0;
+            controls.target.set(0, 0, 0);
+
+            // Interaction setup
+            raycaster = new THREE.Raycaster();
+            raycaster.near = 0.01;
+            raycaster.far = 5000;
+            mouse = new THREE.Vector2();
+
+            initMaterials();
+            setupLighting();
+            createRoom();
+            createFurniture();
+            setupEventListeners();
+            updateLightVisuals();
+        }
+
+        function initMaterials() {
+            // Enhanced materials with stability fixes
+            materials.wood = new THREE.MeshStandardMaterial({ 
+                color: 0x8B4513, 
+                roughness: 0.7, 
+                metalness: 0.1,
+                side: THREE.FrontSide
+            });
+            
+            materials.darkWood = new THREE.MeshStandardMaterial({ 
+                color: 0x4A2C2A, 
+                roughness: 0.8, 
+                metalness: 0.1,
+                side: THREE.FrontSide
+            });
+            
+            materials.fabric = new THREE.MeshStandardMaterial({ 
+                color: 0x8B7355, 
+                roughness: 0.9, 
+                metalness: 0.0,
+                side: THREE.FrontSide
+            });
+            
+            materials.leather = new THREE.MeshStandardMaterial({ 
+                color: 0x654321, 
+                roughness: 0.3, 
+                metalness: 0.1,
+                side: THREE.FrontSide
+            });
+            
+            materials.metal = new THREE.MeshStandardMaterial({ 
+                color: 0x666666, 
+                roughness: 0.2, 
+                metalness: 0.8,
+                side: THREE.FrontSide
+            });
+            
+            materials.blackMetal = new THREE.MeshStandardMaterial({ 
+                color: 0x222222, 
+                roughness: 0.3, 
+                metalness: 0.9,
+                side: THREE.FrontSide
+            });
+            
+            materials.plastic = new THREE.MeshStandardMaterial({ 
+                color: 0x333333, 
+                roughness: 0.5, 
+                metalness: 0.0,
+                side: THREE.FrontSide
+            });
+            
+            materials.whitePlastic = new THREE.MeshStandardMaterial({ 
+                color: 0xFFFFFF, 
+                roughness: 0.4, 
+                metalness: 0.0,
+                side: THREE.FrontSide
+            });
+            
+            // Smart wall material
+            materials.smartWall = new THREE.MeshStandardMaterial({ 
+                color: 0x1a1a2e, 
+                roughness: 0.1, 
+                metalness: 0.3,
+                emissive: 0x001133,
+                emissiveIntensity: 0.2,
+                side: THREE.FrontSide
+            });
+            
+            materials.floor = new THREE.MeshStandardMaterial({ 
+                color: 0x2a2a2a, 
+                roughness: 0.8, 
+                metalness: 0.2,
+                side: THREE.FrontSide
+            });
+            
+            materials.ceiling = new THREE.MeshStandardMaterial({ 
+                color: 0x1a1a1a, 
+                roughness: 0.9, 
+                metalness: 0.1,
+                side: THREE.FrontSide
+            });
+        }
+
+        function setupLighting() {
+            // Stable lighting setup
+            ambientLight = new THREE.AmbientLight(0x404040, 0.3);
+            scene.add(ambientLight);
+
+            hemisphereLight = new THREE.HemisphereLight(0x87CEEB, 0xF4A460, 0.4);
+            hemisphereLight.position.set(0, 20, 0);
+            scene.add(hemisphereLight);
+
+            // Enhanced sunlight
+            sunlight = new THREE.DirectionalLight(0xFFF8DC, 1.0);
+            sunlight.position.set(20, 25, 15);
+            sunlight.castShadow = true;
+            sunlight.shadow.mapSize.width = 2048;
+            sunlight.shadow.mapSize.height = 2048;
+            sunlight.shadow.camera.near = 0.5;
+            sunlight.shadow.camera.far = 200;
+            sunlight.shadow.camera.left = -50;
+            sunlight.shadow.camera.right = 50;
+            sunlight.shadow.camera.top = 50;
+            sunlight.shadow.camera.bottom = -50;
+            sunlight.shadow.bias = -0.0001;
+            sunlight.shadow.radius = 4;
+            scene.add(sunlight);
+
+            // FIXED TUBELIGHT - CLEARLY VISIBLE
+            tubelight = new THREE.PointLight(0xFFFFFF, 2.0, 100);
+            tubelight.position.set(0, 5.5, 0); // MOVED HIGHER FOR VISIBILITY
+            tubelight.castShadow = true;
+            tubelight.shadow.mapSize.width = 1024;
+            tubelight.shadow.mapSize.height = 1024;
+            tubelight.shadow.camera.near = 0.1;
+            tubelight.shadow.camera.far = 100;
+            tubelight.shadow.bias = -0.0001;
+            scene.add(tubelight);
+
+            // FIXED TABLE LAMP LIGHT - CLEARLY VISIBLE
+            tableLampLight = new THREE.PointLight(0xFFE4B5, 1.5, 30);
+            tableLampLight.position.set(1.8, -2.8, 1.5); // ADJUSTED POSITION
+            tableLampLight.castShadow = true;
+            tableLampLight.shadow.mapSize.width = 512;
+            tableLampLight.shadow.mapSize.height = 512;
+            tableLampLight.shadow.camera.near = 0.1;
+            tableLampLight.shadow.camera.far = 30;
+            tableLampLight.shadow.bias = -0.0001;
+            scene.add(tableLampLight);
+
+            createLightVisuals();
+            createWallLights();
+        }
+
+        function createLightVisuals() {
+            // ENHANCED TUBELIGHT VISUAL - CLEARLY VISIBLE
+            const tubelightGeometry = new THREE.BoxGeometry(4.0, 0.2, 0.2);
+            const tubelightMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xFFFFFF,
+                emissive: 0xFFFFFF,
+                emissiveIntensity: 1.0,
+                transparent: false
+            });
+            tubelightMesh = new THREE.Mesh(tubelightGeometry, tubelightMaterial);
+            tubelightMesh.position.set(0, 5.5, 0); // MATCH TUBELIGHT POSITION
+            tubelightMesh.frustumCulled = false;
+            scene.add(tubelightMesh);
+
+            // ENHANCED TABLE LAMP VISUAL
+            const lampLightGeometry = new THREE.SphereGeometry(0.15, 16, 16);
+            const lampLightMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xFFE4B5,
+                emissive: 0xFFE4B5,
+                emissiveIntensity: 0.8,
+                transparent: false
+            });
+            tableLampMesh = new THREE.Mesh(lampLightGeometry, lampLightMaterial);
+            tableLampMesh.position.set(1.8, -2.8, 1.5); // MATCH LAMP LIGHT POSITION
+            tableLampMesh.frustumCulled = false;
+            scene.add(tableLampMesh);
+        }
+
+        function createWallLights() {
+            // LED strips on walls
+            const positions = [
+                [-5.9, 2, 0], [5.9, 2, 0], [0, 2, -5.9], [0, 2, 5.9]
+            ];
+            
+            positions.forEach((pos, i) => {
+                const ledStrip = new THREE.Mesh(
+                    new THREE.BoxGeometry(i < 2 ? 8 : 0.1, 0.1, i < 2 ? 0.1 : 8),
+                    new THREE.MeshBasicMaterial({
+                        color: 0x00ff88,
+                        emissive: 0x00ff88,
+                        emissiveIntensity: 0.5,
+                        transparent: true,
+                        opacity: 0.8
+                    })
+                );
+                ledStrip.position.set(...pos);
+                ledStrip.frustumCulled = false;
+                wallLights.push(ledStrip);
+                scene.add(ledStrip);
+            });
+        }
+
+        function createRoom() {
+            const roomSize = 12;
+            const wallThickness = 0.3;
+            const floorY = -roomSize / 2;
+
+            // Enhanced floor
+            const floor = new THREE.Mesh(
+                new THREE.BoxGeometry(roomSize, wallThickness, roomSize),
+                materials.floor
+            );
+            floor.position.y = floorY;
+            floor.receiveShadow = true;
+            floor.frustumCulled = false;
+            scene.add(floor);
+
+            // Enhanced ceiling
+            const ceiling = new THREE.Mesh(
+                new THREE.BoxGeometry(roomSize, wallThickness, roomSize),
+                materials.ceiling
+            );
+            ceiling.position.y = roomSize / 2;
+            ceiling.receiveShadow = true;
+            ceiling.frustumCulled = false;
+            scene.add(ceiling);
+
+            // Smart walls
+            const backWall = new THREE.Mesh(
+                new THREE.BoxGeometry(wallThickness, roomSize, roomSize),
+                materials.smartWall
+            );
+            backWall.position.set(-roomSize / 2, 0, 0);
+            backWall.receiveShadow = true;
+            backWall.frustumCulled = false;
+            backWall.userData = { type: 'wall', interactive: true };
+            interactiveObjects.push(backWall);
+            scene.add(backWall);
+
+            const leftWall = new THREE.Mesh(
+                new THREE.BoxGeometry(roomSize, roomSize, wallThickness),
+                materials.smartWall
+            );
+            leftWall.position.set(0, 0, -roomSize / 2);
+            leftWall.receiveShadow = true;
+            leftWall.frustumCulled = false;
+            leftWall.userData = { type: 'wall', interactive: true };
+            interactiveObjects.push(leftWall);
+            scene.add(leftWall);
+
+            const rightWall = new THREE.Mesh(
+                new THREE.BoxGeometry(roomSize, roomSize, wallThickness),
+                materials.smartWall
+            );
+            rightWall.position.set(0, 0, roomSize / 2);
+            rightWall.receiveShadow = true;
+            rightWall.frustumCulled = false;
+            rightWall.userData = { type: 'wall', interactive: true };
+            interactiveObjects.push(rightWall);
+            scene.add(rightWall);
+
+            // Add "CHITTY" text on the back wall
+            createWallText();
+        }
+
+        function createWallText() {
+            // Create canvas texture for text
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 1024;
+            canvas.height = 256;
+            
+            context.fillStyle = '#00ff88';
+            context.font = 'bold 120px Arial';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText('CHITTY', 512, 128);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            
+            const textMaterial = new THREE.MeshBasicMaterial({
+                map: texture,
+                transparent: true,
+                emissive: 0x00ff88,
+                emissiveIntensity: 0.3
+            });
+            
+            const textGeometry = new THREE.PlaneGeometry(4, 1);
+            const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+            
+            // Position on back wall
+            textMesh.position.set(-5.85, 1, 0);
+            textMesh.rotation.y = Math.PI / 2;
+            textMesh.frustumCulled = false;
+            
+            scene.add(textMesh);
+        }
+
+        function disableFrustumCulling(object) {
+            object.traverse(function(child) {
+                if (child.isMesh) {
+                    child.frustumCulled = false;
+                }
+            });
+        }
+
+        function createFurniture() {
+            createBed();
+            createTable();
+            createOfficeChair();
+            createTableLamp(); // ENHANCED FOR VISIBILITY
+            createLaptop();
+            createCoffeeCup(); // ENHANCED FOR VISIBILITY
+            createHangingPlant();
+            createBookshelf();
+            createWardrobe();
+            createDesktopComputer();
+            createCircuitBoards();
+            createToolRack();
+            createWhiteboard();
+        }
+
+        function createBed() {
+            const bedGroup = new THREE.Group();
+            const floorLevel = -6;
+            
+            // Bed frame
+            const frame = new THREE.Mesh(
+                new THREE.BoxGeometry(3.5, 0.6, 6),
+                materials.wood
+            );
+            frame.position.y = 0.3;
+            frame.castShadow = true;
+            frame.receiveShadow = true;
+            bedGroup.add(frame);
+
+            // Mattress
+            const mattress = new THREE.Mesh(
+                new THREE.BoxGeometry(3.2, 0.8, 5.7),
+                materials.fabric
+            );
+            mattress.position.y = 1.0;
+            mattress.castShadow = true;
+            mattress.receiveShadow = true;
+            bedGroup.add(mattress);
+
+            // Headboard
+            const headboard = new THREE.Mesh(
+                new THREE.BoxGeometry(3.5, 2.5, 0.2),
+                materials.wood
+            );
+            headboard.position.set(0, 1.85, -3.1);
+            headboard.castShadow = true;
+            headboard.receiveShadow = true;
+            bedGroup.add(headboard);
+
+            // Pillows
+            const pillowMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xFFFFFF, 
+                roughness: 0.8, 
+                metalness: 0.0 
+            });
+
+            const pillow1 = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 0.4, 0.9),
+                pillowMaterial
+            );
+            pillow1.position.set(0.8, 1.3, -2.2);
+            pillow1.castShadow = true;
+            pillow1.receiveShadow = true;
+            bedGroup.add(pillow1);
+
+            const pillow2 = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 0.4, 0.9),
+                pillowMaterial
+            );
+            pillow2.position.set(-0.8, 1.3, -2.2);
+            pillow2.castShadow = true;
+            pillow2.receiveShadow = true;
+            bedGroup.add(pillow2);
+
+            // Bed sheets
+            const blanket = new THREE.Mesh(
+                new THREE.BoxGeometry(3.0, 0.1, 4.5),
+                new THREE.MeshStandardMaterial({ color: 0x4169E1, roughness: 0.7 })
+            );
+            blanket.position.set(0, 1.15, 0.5);
+            blanket.castShadow = true;
+            blanket.receiveShadow = true;
+            bedGroup.add(blanket);
+
+            bedGroup.position.set(-4, floorLevel + 0.3, -1);
+            disableFrustumCulling(bedGroup);
+            scene.add(bedGroup);
+        }
+
+        function createTable() {
+            const tableGroup = new THREE.Group();
+            const floorLevel = -6;
+
+            // Table top
+            const top = new THREE.Mesh(
+                new THREE.BoxGeometry(2.5, 0.15, 2.0),
+                materials.wood
+            );
+            top.position.y = 1.5;
+            top.castShadow = true;
+            top.receiveShadow = true;
+            tableGroup.add(top);
+
+            // Table legs
+            const legPositions = [
+                [1.1, 0.75, 0.8], [-1.1, 0.75, 0.8],
+                [1.1, 0.75, -0.8], [-1.1, 0.75, -0.8]
+            ];
+
+            legPositions.forEach(pos => {
+                const leg = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.06, 0.08, 1.5, 12),
+                    materials.wood
+                );
+                leg.position.set(...pos);
+                leg.castShadow = true;
+                leg.receiveShadow = true;
+                tableGroup.add(leg);
+            });
+
+            // Table drawer
+            const drawer = new THREE.Mesh(
+                new THREE.BoxGeometry(1.8, 0.3, 1.2),
+                materials.wood
+            );
+            drawer.position.set(0, 1.0, 0);
+            drawer.castShadow = true;
+            drawer.receiveShadow = true;
+            tableGroup.add(drawer);
+
+            // Drawer handle
+            const handle = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.02, 0.02, 0.8, 8),
+                materials.metal
+            );
+            handle.position.set(0, 1.0, 0.65);
+            handle.rotation.z = Math.PI / 2;
+            handle.castShadow = true;
+            handle.receiveShadow = true;
+            tableGroup.add(handle);
+
+            tableGroup.position.set(1.5, floorLevel, 1.0);
+            disableFrustumCulling(tableGroup);
+            scene.add(tableGroup);
+        }
+
+        function createOfficeChair() {
+            const chairGroup = new THREE.Group();
+            const floorLevel = -6;
+
+            // Chair legs (5 legs)
+            for (let i = 0; i < 5; i++) {
+                const angle = (i / 5) * Math.PI * 2;
+                const legX = Math.cos(angle) * 0.7;
+                const legZ = Math.sin(angle) * 0.7;
+
+                const leg = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.03, 0.03, 0.3, 8),
+                    materials.metal
+                );
+                leg.position.set(legX, 0.15, legZ);
+                leg.castShadow = true;
+                leg.receiveShadow = true;
+                chairGroup.add(leg);
+
+                // Wheels
+                const wheel = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.08, 12, 12),
+                    materials.metal
+                );
+                wheel.position.set(legX, 0.08, legZ);
+                wheel.castShadow = true;
+                wheel.receiveShadow = true;
+                chairGroup.add(wheel);
+            }
+
+            // Chair base
+            const base = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.05, 0.1, 0.3, 16),
+                materials.metal
+            );
+            base.position.y = 0.45;
+            base.castShadow = true;
+            base.receiveShadow = true;
+            chairGroup.add(base);
+
+            // Gas cylinder
+            const cylinder = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.08, 0.08, 1.2, 16),
+                materials.metal
+            );
+            cylinder.position.y = 1.2;
+            cylinder.castShadow = true;
+            cylinder.receiveShadow = true;
+            chairGroup.add(cylinder);
+
+            // Seat
+            const seat = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 0.15, 1.2),
+                materials.leather
+            );
+            seat.position.y = 1.9;
+            seat.castShadow = true;
+            seat.receiveShadow = true;
+            chairGroup.add(seat);
+
+            // Backrest
+            const backrest = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 1.8, 0.15),
+                materials.leather
+            );
+            backrest.position.set(0, 2.8, -0.5);
+            backrest.rotation.x = -Math.PI / 12;
+            backrest.castShadow = true;
+            backrest.receiveShadow = true;
+            chairGroup.add(backrest);
+
+            // Armrests
+            const armrest1 = new THREE.Mesh(
+                new THREE.BoxGeometry(0.15, 0.6, 0.8),
+                materials.leather
+            );
+            armrest1.position.set(0.65, 2.2, -0.1);
+            armrest1.castShadow = true;
+            armrest1.receiveShadow = true;
+            chairGroup.add(armrest1);
+
+            const armrest2 = new THREE.Mesh(
+                new THREE.BoxGeometry(0.15, 0.6, 0.8),
+                materials.leather
+            );
+            armrest2.position.set(-0.65, 2.2, -0.1);
+            armrest2.castShadow = true;
+            armrest2.receiveShadow = true;
+            chairGroup.add(armrest2);
+
+            chairGroup.position.set(1.5, floorLevel, 2.8);
+            chairGroup.rotation.y = chairRotationAngle;
+            chairGroup.userData = { type: 'chair', interactive: true };
+            chair = chairGroup;
+            interactiveObjects.push(chairGroup);
+            disableFrustumCulling(chairGroup);
+            scene.add(chairGroup);
+        }
+
+        // ENHANCED TABLE LAMP - MUCH MORE VISIBLE
+        function createTableLamp() {
+            const lampGroup = new THREE.Group();
+            const tableHeight = 1.5;
+            const floorLevel = -6;
+
+            // LARGER, MORE VISIBLE BASE
+            const base = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.3, 0.4, 0.5, 20),
+                new THREE.MeshStandardMaterial({
+                    color: 0x666666,
+                    roughness: 0.2,
+                    metalness: 0.8
+                })
+            );
+            base.position.y = 0.25;
+            base.castShadow = true;
+            base.receiveShadow = true;
+            lampGroup.add(base);
+
+            // TALLER, MORE VISIBLE POLE
+            const pole = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.05, 0.05, 1.5, 12),
+                new THREE.MeshStandardMaterial({
+                    color: 0x444444,
+                    roughness: 0.3,
+                    metalness: 0.7
+                })
+            );
+            pole.position.set(0, 1.0, 0);
+            pole.castShadow = true;
+            pole.receiveShadow = true;
+            lampGroup.add(pole);
+
+            // VISIBLE ADJUSTABLE ARM
+            const arm = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.03, 0.03, 0.8, 12),
+                materials.metal
+            );
+            arm.position.set(0.3, 1.7, 0);
+            arm.rotation.z = Math.PI / 4;
+            arm.castShadow = true;
+            arm.receiveShadow = true;
+            lampGroup.add(arm);
+
+            // LARGER, MORE VISIBLE LAMP SHADE
+            const shade = new THREE.Mesh(
+                new THREE.ConeGeometry(0.35, 0.5, 16),
+                new THREE.MeshStandardMaterial({ 
+                    color: 0xFFA500, 
+                    roughness: 0.7, 
+                    metalness: 0.1
+                })
+            );
+            shade.position.set(0.55, 2.0, 0);
+            shade.rotation.z = Math.PI / 2;
+            shade.castShadow = true;
+            shade.receiveShadow = true;
+            lampGroup.add(shade);
+
+            lampGroup.position.set(0.3, floorLevel + tableHeight, 1.5);
+            lampGroup.userData = { type: 'lamp', interactive: true };
+            interactiveObjects.push(lampGroup);
+            disableFrustumCulling(lampGroup);
+            scene.add(lampGroup);
+        }
+
+        function createLaptop() {
+            const laptopGroup = new THREE.Group();
+            const tableHeight = 1.5;
+
+            // Laptop base
+            const base = new THREE.Mesh(
+                new THREE.BoxGeometry(1.0, 0.08, 0.7),
+                new THREE.MeshStandardMaterial({ 
+                    color: 0x2C3E50, 
+                    roughness: 0.3, 
+                    metalness: 0.7 
+                })
+            );
+            base.position.y = 0.19;
+            base.castShadow = true;
+            base.receiveShadow = true;
+            laptopGroup.add(base);
+
+            // Keyboard detail
+            const keyboard = new THREE.Mesh(
+                new THREE.BoxGeometry(0.85, 0.01, 0.55),
+                new THREE.MeshStandardMaterial({ color: 0x1C1C1C })
+            );
+            keyboard.position.y = 0.24;
+            keyboard.castShadow = true;
+            keyboard.receiveShadow = true;
+            laptopGroup.add(keyboard);
+
+            // Screen - LAPTOP IS OPEN
+            const screen = new THREE.Mesh(
+                new THREE.BoxGeometry(1.0, 0.05, 0.65),
+                new THREE.MeshStandardMaterial({
+                    color: 0x000000,
+                    emissive: 0x001a33,
+                    emissiveIntensity: 0.8,
+                    roughness: 0.1,
+                    metalness: 0.9
+                })
+            );
+            screen.position.set(0, 0.55, -0.3);
+            screen.rotation.x = Math.PI / 2.5;
+            screen.castShadow = true;
+            screen.receiveShadow = true;
+            laptopGroup.add(screen);
+
+            // Screen bezel
+            const bezel = new THREE.Mesh(
+                new THREE.BoxGeometry(1.05, 0.04, 0.7),
+                new THREE.MeshStandardMaterial({ color: 0x2C3E50, roughness: 0.3, metalness: 0.7 })
+            );
+            bezel.position.set(0, 0.55, -0.3);
+            bezel.rotation.x = Math.PI / 2.5;
+            bezel.castShadow = true;
+            bezel.receiveShadow = true;
+            laptopGroup.add(bezel);
+
+            laptopGroup.position.set(2.0, -6 + tableHeight, 1.0);
+            laptopGroup.userData = { type: 'laptop', interactive: true, screen: screen };
+            laptop = laptopGroup;
+            interactiveObjects.push(laptopGroup);
+            disableFrustumCulling(laptopGroup);
+            scene.add(laptopGroup);
+        }
+
+        // ENHANCED COFFEE CUP - MUCH MORE VISIBLE
+        function createCoffeeCup() {
+            const cupGroup = new THREE.Group();
+            const tableHeight = 1.5;
+            const floorLevel = -6;
+
+            // LARGER, MORE VISIBLE COFFEE CUP
+            const cup = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.2, 0.15, 0.4, 20),
+                new THREE.MeshStandardMaterial({ 
+                    color: 0xFFFFFF, 
+                    roughness: 0.1, 
+                    metalness: 0.0 
+                })
+            );
+            cup.position.y = 0.2;
+            cup.castShadow = true;
+            cup.receiveShadow = true;
+            cupGroup.add(cup);
+
+            // VISIBLE COFFEE LIQUID
+            const coffee = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.18, 0.13, 0.3, 20),
+                new THREE.MeshStandardMaterial({ 
+                    color: 0x3C2415, 
+                    roughness: 0.1, 
+                    metalness: 0.0 
+                })
+            );
+            coffee.position.y = 0.25;
+            coffee.castShadow = true;
+            coffee.receiveShadow = true;
+            cupGroup.add(coffee);
+
+            // LARGER HANDLE
+            const handle = new THREE.Mesh(
+                new THREE.TorusGeometry(0.12, 0.03, 8, 16),
+                new THREE.MeshStandardMaterial({ 
+                    color: 0xFFFFFF, 
+                    roughness: 0.1, 
+                    metalness: 0.0 
+                })
+            );
+            handle.position.set(0.25, 0.2, 0);
+            handle.rotation.y = Math.PI / 2;
+            handle.rotation.z = Math.PI / 2;
+            handle.castShadow = true;
+            handle.receiveShadow = true;
+            cupGroup.add(handle);
+
+            // LARGER SAUCER
+            const saucer = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.3, 0.3, 0.03, 20),
+                new THREE.MeshStandardMaterial({ 
+                    color: 0xFFFFFF, 
+                    roughness: 0.1, 
+                    metalness: 0.0 
+                })
+            );
+            saucer.position.y = 0.015;
+            saucer.castShadow = true;
+            saucer.receiveShadow = true;
+            cupGroup.add(saucer);
+
+            // VISIBLE STEAM PARTICLES
+            const steamGeometry = new THREE.SphereGeometry(0.02, 8, 8);
+            const steamMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xFFFFFF, 
+                transparent: true, 
+                opacity: 0.6
+            });
+
+            for (let i = 0; i < 5; i++) {
+                const steam = new THREE.Mesh(steamGeometry, steamMaterial);
+                steam.position.set(
+                    (Math.random() - 0.5) * 0.1, 
+                    0.5 + i * 0.1, 
+                    (Math.random() - 0.5) * 0.1
+                );
+                steam.userData = { steamIndex: i };
+                cupGroup.add(steam);
+            }
+
+            // BETTER POSITION ON TABLE - MORE VISIBLE
+            cupGroup.position.set(-0.8, floorLevel + tableHeight, 1.0);
+            cupGroup.userData = { type: 'cup', interactive: true };
+            interactiveObjects.push(cupGroup);
+            disableFrustumCulling(cupGroup);
+            scene.add(cupGroup);
+        }
+
+        function createHangingPlant() {
+            const plantGroup = new THREE.Group();
+
+            // Pot
+            const pot = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.25, 0.2, 0.4, 16),
+                new THREE.MeshStandardMaterial({ 
+                    color: 0x8B4513, 
+                    roughness: 0.8, 
+                    metalness: 0.1 
+                })
+            );
+            pot.position.y = 0;
+            pot.castShadow = true;
+            pot.receiveShadow = true;
+            plantGroup.add(pot);
+
+            // Soil
+            const soil = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.23, 0.18, 0.1, 16),
+                new THREE.MeshStandardMaterial({ color: 0x4A3C28 })
+            );
+            soil.position.y = 0.15;
+            soil.castShadow = true;
+            soil.receiveShadow = true;
+            plantGroup.add(soil);
+
+            // Multiple plant stems
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2;
+                const radius = 0.15 + Math.random() * 0.1;
+                const stemX = Math.cos(angle) * radius;
+                const stemZ = Math.sin(angle) * radius;
+                const stemHeight = 0.8 + Math.random() * 0.4;
+
+                // Stem
+                const stem = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.02, 0.02, stemHeight, 8),
+                    new THREE.MeshStandardMaterial({ color: 0x228B22 })
+                );
+                stem.position.set(stemX, 0.2 + stemHeight / 2, stemZ);
+                stem.castShadow = true;
+                stem.receiveShadow = true;
+                plantGroup.add(stem);
+
+                // Leaves
+                for (let j = 0; j < 3; j++) {
+                    const leafHeight = stemHeight * (0.3 + j * 0.3);
+                    const leaf = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.08 + Math.random() * 0.04, 8, 8),
+                        new THREE.MeshStandardMaterial({ 
+                            color: 0x228B22 + Math.random() * 0x002200,
+                            roughness: 0.8 
+                        })
+                    );
+                    leaf.position.set(
+                        stemX + (Math.random() - 0.5) * 0.1,
+                        0.2 + leafHeight,
+                        stemZ + (Math.random() - 0.5) * 0.1
+                    );
+                    leaf.castShadow = true;
+                    leaf.receiveShadow = true;
+                    plantGroup.add(leaf);
+                }
+            }
+
+            // Hanging chain
+            const chain = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.008, 0.008, 2.5, 8),
+                materials.metal
+            );
+            chain.position.y = 1.45;
+            chain.castShadow = true;
+            plantGroup.add(chain);
+
+            plantGroup.position.set(4.5, 2.5, -2);
+            plantGroup.userData = { type: 'plant', isHangingPlant: true };
+            disableFrustumCulling(plantGroup);
+            scene.add(plantGroup);
+        }
+
+        function createBookshelf() {
+            const shelfGroup = new THREE.Group();
+            const floorLevel = -6;
+
+            // Bookshelf frame
+            const frame = new THREE.Mesh(
+                new THREE.BoxGeometry(0.3, 5, 2.5),
+                materials.wood
+            );
+            frame.position.y = 2.5;
+            frame.castShadow = true;
+            frame.receiveShadow = true;
+            shelfGroup.add(frame);
+
+            // Shelves with books
+            for (let i = 0; i < 4; i++) {
+                const shelf = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.25, 0.15, 2.3),
+                    materials.wood
+                );
+                shelf.position.y = 0.5 + i * 1.2;
+                shelf.castShadow = true;
+                shelf.receiveShadow = true;
+                shelfGroup.add(shelf);
+
+                // Books
+                let bookPosition = -1;
+                for (let j = 0; j < 4; j++) {
+                    const bookWidth = 0.08 + Math.random() * 0.1;
+                    const bookHeight = 0.7 + Math.random() * 0.3;
+                    const book = new THREE.Mesh(
+                        new THREE.BoxGeometry(bookWidth, bookHeight, 0.5),
+                        new THREE.MeshStandardMaterial({ 
+                            color: Math.random() * 0xffffff,
+                            roughness: 0.8,
+                            metalness: 0.0
+                        })
+                    );
+                    book.position.set(
+                        0,
+                        0.5 + i * 1.2 + bookHeight / 2 + 0.08,
+                        bookPosition
+                    );
+                    book.userData = { type: 'book', interactive: true, originalZ: bookPosition };
+                    book.castShadow = true;
+                    book.receiveShadow = true;
+                    books.push(book);
+                    interactiveObjects.push(book);
+                    shelfGroup.add(book);
+                    
+                    bookPosition += bookWidth + 0.02;
+                    if (bookPosition > 1) break;
+                }
+            }
+
+            shelfGroup.position.set(-5.5, floorLevel, -3);
+            disableFrustumCulling(shelfGroup);
+            scene.add(shelfGroup);
+        }
+
+        function createWardrobe() {
+            const wardrobeGroup = new THREE.Group();
+            const floorLevel = -6;
+
+            // Main body
+            const body = new THREE.Mesh(
+                new THREE.BoxGeometry(2.5, 5, 1.2),
+                materials.wood
+            );
+            body.position.y = 2.5;
+            body.castShadow = true;
+            body.receiveShadow = true;
+            wardrobeGroup.add(body);
+
+            // Doors
+            const door1 = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 4.8, 0.1),
+                materials.darkWood
+            );
+            door1.position.set(-0.6, 2.5, 0.65);
+            door1.castShadow = true;
+            door1.receiveShadow = true;
+            door1.userData = { isDoor: true, side: 'left' };
+            wardrobeGroup.add(door1);
+
+            const door2 = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 4.8, 0.1),
+                materials.darkWood
+            );
+            door2.position.set(0.6, 2.5, 0.65);
+            door2.castShadow = true;
+            door2.receiveShadow = true;
+            door2.userData = { isDoor: true, side: 'right' };
+            wardrobeGroup.add(door2);
+
+            // Door handles
+            const handle1 = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.03, 0.03, 0.15, 8),
+                materials.metal
+            );
+            handle1.position.set(-0.3, 2.5, 0.75);
+            handle1.rotation.z = Math.PI / 2;
+            handle1.castShadow = true;
+            wardrobeGroup.add(handle1);
+
+            const handle2 = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.03, 0.03, 0.15, 8),
+                materials.metal
+            );
+            handle2.position.set(0.3, 2.5, 0.75);
+            handle2.rotation.z = Math.PI / 2;
+            handle2.castShadow = true;
+            wardrobeGroup.add(handle2);
+
+            wardrobeGroup.position.set(3.5, floorLevel, -5);
+            wardrobeGroup.userData = { type: 'wardrobe', interactive: true, doors: [door1, door2] };
+            wardrobe = wardrobeGroup;
+            interactiveObjects.push(wardrobeGroup);
+            disableFrustumCulling(wardrobeGroup);
+            scene.add(wardrobeGroup);
+        }
+
+        function createDesktopComputer() {
+            const computerGroup = new THREE.Group();
+            const floorLevel = -6;
+
+            // Computer case
+            const caseMain = new THREE.Mesh(
+                new THREE.BoxGeometry(0.8, 1.8, 2.0),
+                materials.blackMetal
+            );
+            caseMain.position.y = 0.9;
+            caseMain.castShadow = true;
+            caseMain.receiveShadow = true;
+            computerGroup.add(caseMain);
+
+            // Glass side panel
+            const glassPanel = new THREE.Mesh(
+                new THREE.BoxGeometry(0.05, 1.6, 1.8),
+                new THREE.MeshStandardMaterial({
+                    color: 0x000000,
+                    transparent: true,
+                    opacity: 0.3,
+                    roughness: 0.0,
+                    metalness: 0.1
+                })
+            );
+            glassPanel.position.set(-0.4, 0.9, 0);
+            glassPanel.castShadow = true;
+            computerGroup.add(glassPanel);
+
+            // RGB components
+            const rgbComponent1 = new THREE.Mesh(
+                new THREE.BoxGeometry(0.3, 0.15, 0.6),
+                new THREE.MeshBasicMaterial({
+                    color: 0xff0088,
+                    emissive: 0xff0088,
+                    emissiveIntensity: 0.5
+                })
+            );
+            rgbComponent1.position.set(-0.2, 1.2, 0.3);
+            computerGroup.add(rgbComponent1);
+
+            // Power LED
+            const powerLED = new THREE.Mesh(
+                new THREE.SphereGeometry(0.05, 16, 16),
+                new THREE.MeshBasicMaterial({
+                    color: 0x00ff00,
+                    emissive: 0x00ff00,
+                    emissiveIntensity: 0.8
+                })
+            );
+            powerLED.position.set(0.4, 0.2, 0.9);
+            computerGroup.add(powerLED);
+
+            computerGroup.position.set(-0.5, floorLevel, 1.5);
+            disableFrustumCulling(computerGroup);
+            scene.add(computerGroup);
+        }
+
+        function createCircuitBoards() {
+            const circuitGroup = new THREE.Group();
+            const tableHeight = 1.5;
+
+            // Main PCB
+            const pcb = new THREE.Mesh(
+                new THREE.BoxGeometry(0.6, 0.02, 0.4),
+                new THREE.MeshStandardMaterial({ color: 0x004400, roughness: 0.8 })
+            );
+            pcb.position.y = 0.16;
+            pcb.castShadow = true;
+            circuitGroup.add(pcb);
+
+            // Components on PCB
+            const componentPositions = [
+                [-0.2, 0.18, -0.1], [0.1, 0.18, 0.1], [-0.1, 0.18, 0.15], [0.2, 0.18, -0.15]
+            ];
+
+            componentPositions.forEach(pos => {
+                const component = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.08, 0.05, 0.06),
+                    materials.blackMetal
+                );
+                component.position.set(...pos);
+                component.castShadow = true;
+                circuitGroup.add(component);
+            });
+
+            // Breadboard
+            const breadboard = new THREE.Mesh(
+                new THREE.BoxGeometry(0.4, 0.03, 0.25),
+                materials.whitePlastic
+            );
+            breadboard.position.set(0.8, 0.17, 0);
+            breadboard.castShadow = true;
+            circuitGroup.add(breadboard);
+
+            // Jumper wires
+            for (let i = 0; i < 10; i++) {
+                const wire = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.01, 0.01, 0.3, 6),
+                    new THREE.MeshStandardMaterial({ 
+                        color: [0xff0000, 0x0000ff, 0x00ff00, 0xffff00, 0x000000][i % 5],
+                        roughness: 0.4
+                    })
+                );
+                wire.position.set(
+                    0.6 + (i % 5) * 0.08,
+                    0.2,
+                    -0.1 + Math.floor(i / 5) * 0.2
+                );
+                wire.rotation.z = Math.PI / 2;
+                circuitGroup.add(wire);
+            }
+
+            circuitGroup.position.set(-1.2, -6 + tableHeight, 0.8);
+            disableFrustumCulling(circuitGroup);
+            scene.add(circuitGroup);
+        }
+
+        function createToolRack() {
+            const toolGroup = new THREE.Group();
+            const floorLevel = -6;
+
+            // Tool rack frame
+            const frame = new THREE.Mesh(
+                new THREE.BoxGeometry(0.1, 3, 1.5),
+                materials.metal
+            );
+            frame.position.y = 1.5;
+            frame.castShadow = true;
+            toolGroup.add(frame);
+
+            // Pegboard backing
+            const pegboard = new THREE.Mesh(
+                new THREE.BoxGeometry(0.05, 2.8, 1.4),
+                new THREE.MeshStandardMaterial({ color: 0x8B4513 })
+            );
+            pegboard.position.set(0.08, 1.5, 0);
+            pegboard.castShadow = true;
+            toolGroup.add(pegboard);
+
+            // Tools hanging on rack
+            const toolTypes = [
+                { geo: new THREE.CylinderGeometry(0.01, 0.01, 0.4, 8), color: 0x333333 },
+                { geo: new THREE.BoxGeometry(0.3, 0.03, 0.03), color: 0x666666 },
+                { geo: new THREE.CylinderGeometry(0.02, 0.02, 0.3, 8), color: 0x444444 },
+            ];
+
+            for (let i = 0; i < 8; i++) {
+                const toolType = toolTypes[i % toolTypes.length];
+                const tool = new THREE.Mesh(toolType.geo, new THREE.MeshStandardMaterial({ color: toolType.color }));
+                tool.position.set(
+                    0.15,
+                    0.5 + (i % 4) * 0.5,
+                    -0.6 + Math.floor(i / 4) * 1.2
+                );
+                tool.rotation.z = Math.PI / 2;
+                tool.castShadow = true;
+                toolGroup.add(tool);
+            }
+
+            toolGroup.position.set(5.5, floorLevel, -2);
+            disableFrustumCulling(toolGroup);
+            scene.add(toolGroup);
+        }
+
+        function createWhiteboard() {
+            const boardGroup = new THREE.Group();
+
+            // Whiteboard frame
+            const frame = new THREE.Mesh(
+                new THREE.BoxGeometry(3.5, 2.5, 0.1),
+                materials.metal
+            );
+            frame.position.y = 1;
+            frame.castShadow = true;
+            boardGroup.add(frame);
+
+            // Whiteboard surface
+            const surface = new THREE.Mesh(
+                new THREE.BoxGeometry(3.3, 2.3, 0.05),
+                materials.whitePlastic
+            );
+            surface.position.set(0, 1, 0.08);
+            surface.receiveShadow = true;
+            boardGroup.add(surface);
+
+            // Marker tray
+            const tray = new THREE.Mesh(
+                new THREE.BoxGeometry(1.0, 0.1, 0.15),
+                materials.metal
+            );
+            tray.position.set(0, -0.15, 0.15);
+            tray.castShadow = true;
+            boardGroup.add(tray);
+
+            // Markers
+            for (let i = 0; i < 4; i++) {
+                const marker = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.02, 0.02, 0.2, 8),
+                    new THREE.MeshStandardMaterial({ 
+                        color: [0xff0000, 0x0000ff, 0x00ff00, 0x000000][i] 
+                    })
+                );
+                marker.position.set(-0.3 + i * 0.2, -0.1, 0.15);
+                marker.rotation.z = Math.PI / 2;
+                marker.castShadow = true;
+                boardGroup.add(marker);
+            }
+
+            boardGroup.position.set(0, -1, -5.8);
+            disableFrustumCulling(boardGroup);
+            scene.add(boardGroup);
+        }
+
+        function setupEventListeners() {
+            // Button controls
+            document.getElementById('toggleSunlight').addEventListener('click', toggleSunlight);
+            document.getElementById('toggleTubelight').addEventListener('click', toggleTubelight);
+            document.getElementById('toggleLamp').addEventListener('click', toggleLamp);
+            document.getElementById('nightMode').addEventListener('click', toggleNightMode);
+            document.getElementById('resetView').addEventListener('click', resetView);
+            document.getElementById('autoRotate').addEventListener('click', toggleAutoRotate);
+
+            // Interactive sliders
+            document.getElementById('chairRotation').addEventListener('input', updateChairRotation);
+            document.getElementById('zoomLevel').addEventListener('input', updateZoom);
+            document.getElementById('wallColor').addEventListener('input', updateWallColor);
+            document.getElementById('animSpeed').addEventListener('input', updateAnimSpeed);
+
+            // Mouse interactions
+            renderer.domElement.addEventListener('click', onMouseClick);
+            renderer.domElement.addEventListener('mousemove', onMouseMove);
+            renderer.domElement.addEventListener('dblclick', onDoubleClick);
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function onMouseClick(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(interactiveObjects, true);
+
+            if (intersects.length > 0) {
+                const object = intersects[0].object;
+                handleObjectInteraction(object);
+            }
+        }
+
+        function onMouseMove(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(interactiveObjects, true);
+
+            if (intersects.length > 0) {
+                document.body.style.cursor = 'pointer';
+            } else {
+                document.body.style.cursor = 'default';
+            }
+        }
+
+        function onDoubleClick(event) {
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children, true);
+
+            if (intersects.length > 0) {
+                const target = intersects[0].point;
+                focusOnPoint(target);
+            }
+        }
+
+        function handleObjectInteraction(object) {
+            const userData = object.userData || object.parent.userData;
+
+            switch (userData.type) {
+                case 'chair':
+                    rotateChair();
+                    break;
+                case 'laptop':
+                    toggleLaptop();
+                    break;
+                case 'book':
+                    toggleBook(object);
+                    break;
+                case 'cup':
+                    activateSteam(object.parent);
+                    break;
+                case 'wardrobe':
+                    toggleWardrobe();
+                    break;
+                case 'wall':
+                    changeWallColor();
+                    break;
+            }
+        }
+
+        function rotateChair() {
+            chairRotationAngle += Math.PI / 4;
+            if (chair) {
+                chair.rotation.y = chairRotationAngle;
+                document.getElementById('chairRotation').value = (chairRotationAngle * 180 / Math.PI) % 360;
+                document.getElementById('chairValue').textContent = Math.round((chairRotationAngle * 180 / Math.PI) % 360) + '°';
+            }
+        }
+
+        function toggleLaptop() {
+            laptopOpen = !laptopOpen;
+            if (laptop && laptop.userData.screen) {
+                laptop.userData.screen.rotation.x = laptopOpen ? Math.PI / 2.5 : Math.PI / 6;
+                laptop.userData.screen.material.emissiveIntensity = laptopOpen ? 0.8 : 0.4;
+            }
+        }
+
+        function toggleBook(book) {
+            const originalZ = book.userData.originalZ;
+            const currentZ = book.position.z;
+            book.position.z = Math.abs(currentZ - originalZ) < 0.1 ? originalZ + 0.3 : originalZ;
+        }
+
+        function activateSteam(cupGroup) {
+            cupGroup.children.forEach(child => {
+                if (child.userData.steamIndex !== undefined) {
+                    child.material.opacity = 0.8;
+                    setTimeout(() => {
+                        child.material.opacity = 0.3;
+                    }, 2000);
+                }
+            });
+        }
+
+        function toggleWardrobe() {
+            wardrobeOpen = !wardrobeOpen;
+            if (wardrobe && wardrobe.userData.doors) {
+                const doors = wardrobe.userData.doors;
+                if (wardrobeOpen) {
+                    doors[0].rotation.y = -Math.PI / 3;
+                    doors[1].rotation.y = Math.PI / 3;
+                } else {
+                    doors[0].rotation.y = 0;
+                    doors[1].rotation.y = 0;
+                }
+            }
+        }
+
+        function changeWallColor() {
+            const hue = Math.random() * 360;
+            updateWallColor({ target: { value: hue } });
+            document.getElementById('wallColor').value = hue;
+            document.getElementById('colorValue').textContent = Math.round(hue) + '°';
+        }
+
+        function updateChairRotation(event) {
+            const angle = (event.target.value * Math.PI) / 180;
+            chairRotationAngle = angle;
+            if (chair) {
+                chair.rotation.y = angle;
+            }
+            document.getElementById('chairValue').textContent = event.target.value + '°';
+        }
+
+        function updateZoom(event) {
+            const distance = parseFloat(event.target.value);
+            const direction = camera.position.clone().sub(controls.target).normalize();
+            camera.position.copy(controls.target).add(direction.multiplyScalar(distance));
+            controls.update();
+            document.getElementById('zoomValue').textContent = event.target.value + 'x';
+        }
+
+        function updateWallColor(event) {
+            const hue = event.target.value;
+            const color = new THREE.Color().setHSL(hue / 360, 0.8, 0.3);
+            
+            // Update wall materials
+            materials.smartWall.emissive = color;
+            materials.smartWall.emissiveIntensity = 0.3;
+            
+            // Update LED strips
+            wallLights.forEach(light => {
+                light.material.color = color;
+                light.material.emissive = color;
+            });
+            
+            document.getElementById('colorValue').textContent = Math.round(hue) + '°';
+        }
+
+        function updateAnimSpeed(event) {
+            animationSpeed = parseFloat(event.target.value);
+            document.getElementById('speedValue').textContent = event.target.value + 'x';
+        }
+
+        function focusOnPoint(point) {
+            const duration = 1000;
+            const start = controls.target.clone();
+            const startTime = Date.now();
+
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                controls.target.lerpVectors(start, point, progress);
+                controls.update();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+            animate();
+        }
+
+        function toggleAutoRotate() {
+            autoRotating = !autoRotating;
+            controls.autoRotate = autoRotating;
+            controls.autoRotateSpeed = 2.0;
+            document.getElementById('autoRotate').classList.toggle('active', autoRotating);
+        }
+
+        function toggleSunlight() {
+            lightingStates.sunlight = !lightingStates.sunlight;
+            sunlight.visible = lightingStates.sunlight;
+            document.getElementById('toggleSunlight').classList.toggle('active', lightingStates.sunlight);
+            updateLightVisuals();
+        }
+
+        function toggleTubelight() {
+            lightingStates.tubelight = !lightingStates.tubelight;
+            tubelight.visible = lightingStates.tubelight;
+            tubelightMesh.visible = lightingStates.tubelight;
+            document.getElementById('toggleTubelight').classList.toggle('active', lightingStates.tubelight);
+            updateLightVisuals();
+        }
+
+        function toggleLamp() {
+            lightingStates.tableLamp = !lightingStates.tableLamp;
+            tableLampLight.visible = lightingStates.tableLamp;
+            tableLampMesh.visible = lightingStates.tableLamp;
+            document.getElementById('toggleLamp').classList.toggle('active', lightingStates.tableLamp);
+            updateLightVisuals();
+        }
+
+        function toggleNightMode() {
+            lightingStates.nightMode = !lightingStates.nightMode;
+            
+            if (lightingStates.nightMode) {
+                lightingStates.sunlight = false;
+                lightingStates.tubelight = false;
+                
+                sunlight.visible = false;
+                tubelight.visible = false;
+                tubelightMesh.visible = false;
+                tableLampLight.intensity = 0.6;
+                
+                ambientLight.intensity = 0.1;
+                hemisphereLight.intensity = 0.1;
+                scene.background.set(0x050510);
+                scene.fog.color.set(0x050510);
+            } else {
+                lightingStates.sunlight = true;
+                lightingStates.tubelight = true;
+                
+                sunlight.visible = true;
+                tubelight.visible = true;
+                tubelightMesh.visible = true;
+                tableLampLight.intensity = 1.0;
+                
+                ambientLight.intensity = 0.3;
+                hemisphereLight.intensity = 0.4;
+                scene.background.set(0x0a0a0a);
+                scene.fog.color.set(0x0a0a0a);
+            }
+
+            document.getElementById('nightMode').classList.toggle('active', lightingStates.nightMode);
+            document.getElementById('toggleSunlight').classList.toggle('active', lightingStates.sunlight);
+            document.getElementById('toggleTubelight').classList.toggle('active', lightingStates.tubelight);
+            
+            updateLightVisuals();
+        }
+
+        function resetView() {
+            camera.position.set(15, 10, 15);
+            controls.target.set(0, 0, 0);
+            controls.update();
+            document.getElementById('zoomLevel').value = 15;
+            document.getElementById('zoomValue').textContent = '15x';
+        }
+
+        function updateLightVisuals() {
+            if (tubelightMesh) {
+                tubelightMesh.material.color.set(tubelight.visible ? 0xFFFFFF : 0x333333);
+                tubelightMesh.material.emissiveIntensity = tubelight.visible ? 1.0 : 0.1;
+            }
+
+            if (tableLampMesh) {
+                tableLampMesh.material.color.set(tableLampLight.visible ? 0xFFE4B5 : 0x333333);
+                tableLampMesh.material.emissiveIntensity = tableLampLight.visible ? 0.8 : 0.1;
+            }
+        }
+
+        function animate() {
+            animationId = requestAnimationFrame(animate);
+            
+            const deltaTime = clock.getDelta() * animationSpeed;
+            const elapsedTime = clock.getElapsedTime() * animationSpeed;
+            
+            controls.update();
+
+            // Stable animations
+            scene.traverse(object => {
+                if (object.userData.isHangingPlant) {
+                    object.rotation.y = Math.sin(elapsedTime * 0.5) * 0.1;
+                    object.rotation.z = Math.cos(elapsedTime * 0.3) * 0.05;
+                }
+                
+                if (object.userData.steamIndex !== undefined) {
+                    const baseY = 0.5 + object.userData.steamIndex * 0.1;
+                    object.position.y = baseY + Math.sin(elapsedTime * 2 + object.userData.steamIndex) * 0.05;
+                    object.position.x += (Math.random() - 0.5) * 0.002;
+                    object.position.z += (Math.random() - 0.5) * 0.002;
+                }
+            });
+
+            // LED animation
+            wallLights.forEach((light, index) => {
+                const intensity = 0.5 + Math.sin(elapsedTime * 2 + index) * 0.2;
+                light.material.emissiveIntensity = intensity;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Initialize everything
+        window.addEventListener('load', () => {
+            init();
+            animate();
+        });
+
+        window.addEventListener('resize', onWindowResize);
+        
+        window.addEventListener('beforeunload', () => {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+        });
+    </script>
+</body>
+</html>
